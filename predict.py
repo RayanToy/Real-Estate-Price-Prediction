@@ -15,6 +15,7 @@
     python predict.py new_flats.csv predictions.csv
 """
 import argparse
+import sys
 import warnings
 from pathlib import Path
 
@@ -55,6 +56,11 @@ def main():
     parser.add_argument('input', help='CSV с квартирами в формате исходных данных')
     parser.add_argument('output', nargs='?', help='куда сохранить CSV с прогнозом (по умолчанию — вывести на экран)')
     args = parser.parse_args()
+
+    # Если вывод идёт не в окно консоли (Git Bash, перенаправление в файл), Python на Windows пишет
+    # в системной кодировке cp1251, а такие терминалы ждут UTF-8 — кириллица превращается в «кракозябры»
+    if not sys.stdout.isatty() and sys.stdout.encoding.lower().replace('-', '') != 'utf8':
+        sys.stdout.reconfigure(encoding='utf-8')
 
     flats = pd.read_csv(args.input)
     flats['predicted_price_sq'] = predict_price(flats).round()
